@@ -13,12 +13,12 @@ import {
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtPayload } from 'src/auth/interfaces/jwt-payload.interface';
 @ApiTags('Users')
+@UseGuards(JwtGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @UseGuards(JwtGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get the profile of the currently authenticated user',
@@ -36,7 +36,6 @@ export class UsersController {
     return this.usersService.findById(user.userId);
   }
 
-  @UseGuards(JwtGuard)
   @Patch('update')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update User Profile' })
@@ -52,6 +51,6 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const userId = req.user.userId;
-    return await this.usersService.update(userId, updateUserDto);
+    return this.usersService.update(userId, updateUserDto);
   }
 }

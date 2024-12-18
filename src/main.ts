@@ -3,20 +3,27 @@ import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { CustomLoggerService } from './common/logger/custom-logger.service';
+import { APP_CONSTANTS } from 'constants/constants';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable CORS using constants
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: APP_CONSTANTS.CORS_ORIGIN,
     credentials: true,
   });
+
+  // Use cookie-parser
   app.use(cookieParser());
-  // Swagger setup
+
+  // Swagger setup using constants
   const config = new DocumentBuilder()
-    .setTitle('Instagram Clone API')
-    .setDescription('API documentation for the Instagram Clone app')
-    .setVersion('1.0')
-    .addTag('users')
+    .setTitle(APP_CONSTANTS.SWAGGER.TITLE)
+    .setDescription(APP_CONSTANTS.SWAGGER.DESCRIPTION)
+    .setVersion(APP_CONSTANTS.SWAGGER.VERSION)
+    .addTag(APP_CONSTANTS.SWAGGER.TAGS[0])
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -25,6 +32,17 @@ async function bootstrap() {
   // Logger Setup
   app.useLogger(app.get(CustomLoggerService));
 
-  await app.listen(process.env.PORT ?? 3001);
+  // Validation Pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  // Use constant for default port
+  await app.listen(process.env.PORT ?? APP_CONSTANTS.DEFAULT_PORT);
 }
+
 bootstrap();

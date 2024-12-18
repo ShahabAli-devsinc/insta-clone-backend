@@ -40,21 +40,31 @@ export class UsersService {
     username: string,
     selectPassword?: boolean,
   ): Promise<User | undefined> {
-    return this.usersRepository.findOne({
-      where: { username },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        password: selectPassword,
-      },
-    });
+    try {
+      return this.usersRepository.findOne({
+        where: { username },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          password: selectPassword,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Error occurred while find user using username', error);
+      throw new Error('Error occurred while find user using user');
+    }
   }
 
   async findById(userId: number): Promise<User> {
-    return this.usersRepository.findOneBy({
-      id: userId,
-    });
+    try {
+      return this.usersRepository.findOneBy({
+        id: userId,
+      });
+    } catch (error) {
+      this.logger.error('Error occurred while find user by id', error);
+      throw new Error('Error occurred while find user by id');
+    }
   }
 
   async update(userId: number, updateUser: UpdateUserDto) {
