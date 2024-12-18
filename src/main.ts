@@ -25,7 +25,6 @@ async function bootstrap() {
   // Logger Setup
   app.useLogger(app.get(CustomLoggerService));
 
-
   await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

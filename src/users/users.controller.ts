@@ -33,8 +33,7 @@ export class UsersController {
     description: 'Unauthorized. Token is missing or invalid.',
   })
   async getProfile(@CurrentUser() user: JwtPayload) {
-    const currentUser = await this.usersService.findById(user.userId);
-    return currentUser;
+    return this.usersService.findById(user.userId);
   }
 
   @UseGuards(JwtGuard)
@@ -53,7 +52,6 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const userId = req.user.userId;
-    const updatedUser = await this.usersService.update(userId, updateUserDto);
-    return updatedUser;
+    return await this.usersService.update(userId, updateUserDto);
   }
 }

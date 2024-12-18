@@ -36,10 +36,10 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   @ApiProperty({
-    description: 'Optional URL to the user\'s profile picture.',
+    description: "Optional URL to the user's profile picture.",
     example: 'https://example.com/profile.jpg',
     nullable: true,
     required: false,
   })
-  profile_picture?: string;
+  profilePicture?: string;
 }
