@@ -12,9 +12,8 @@ import { CustomLoggerService } from './common/logger/custom-logger.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal:true
-      }
-    ),
+      isGlobal: true,
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -30,12 +29,15 @@ import { CustomLoggerService } from './common/logger/custom-logger.service';
       inject: [ConfigService],
     }),
     UsersModule,
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService,{
-    provide: 'Logger',
-    useClass: CustomLoggerService,  // Use the custom logger
-  },],
+  providers: [
+    AppService,
+    {
+      provide: 'Logger',
+      useClass: CustomLoggerService,
+    },
+  ],
 })
 export class AppModule {}

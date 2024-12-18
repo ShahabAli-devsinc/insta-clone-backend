@@ -1,4 +1,10 @@
-import { Column, PrimaryGeneratedColumn, Entity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  PrimaryGeneratedColumn,
+  Entity,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
@@ -26,9 +32,10 @@ export class User {
 
   @Column({ select: false })
   @ApiProperty({
-    description: 'Password of the user. This field is not returned in responses.',
+    description:
+      'Password of the user. This field is not returned in responses.',
     example: 'password123',
-    writeOnly: true, 
+    writeOnly: true,
   })
   password: string;
 
@@ -46,19 +53,19 @@ export class User {
     example: 'https://example.com/profile.jpg',
     nullable: true,
   })
-  profile_picture: string;
+  profilePicture: string;
 
   @CreateDateColumn()
   @ApiProperty({
     description: 'Timestamp when the user was created',
     example: '2024-12-16T14:32:00Z',
   })
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
     description: 'Timestamp when the user data was last updated',
     example: '2024-12-16T15:00:00Z',
   })
-  updated_at: Date;
+  updatedAt: Date;
 }

@@ -24,10 +24,11 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   @ApiProperty({
-    description: 'The updated profile picture URL of the user. This field is optional.',
+    description:
+      'The updated profile picture URL of the user. This field is optional.',
     example: 'https://example.com/new-profile.jpg',
     nullable: true,
     required: false,
   })
-  profile_picture?: string;
+  profilePicture?: string;
 }
