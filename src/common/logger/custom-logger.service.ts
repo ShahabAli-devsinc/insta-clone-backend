@@ -6,7 +6,7 @@ export class CustomLoggerService implements LoggerService {
   private logger: winston.Logger;
 
   constructor() {
-    const logLevel = process.env.NODE_ENV === 'production' ? 'warn' : 'debug'; // Log level based on environment
+    const logLevel = process.env.NODE_ENV === 'production' ? 'warn' : 'debug';
 
     this.logger = winston.createLogger({
       level: logLevel,

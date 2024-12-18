@@ -8,6 +8,7 @@ import { Response } from 'express';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { CustomLoggerService } from 'src/common/logger/custom-logger.service'; // Import the logger
 import { User } from 'src/users/entities/user.entity';
+import { ValidationError } from 'class-validator';
 
 @Injectable()
 export class AuthService {
