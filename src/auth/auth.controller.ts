@@ -30,7 +30,6 @@ export class AuthController {
     type: User,
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  // async login(@Request() req: Express.Request, @Res() res: Response) {
   async login(@Request() req: Express.Request, @Res() res: Response) {
     const userLoggingIn = req.user as LoginUser;
     this.authService.login(userLoggingIn, res);
