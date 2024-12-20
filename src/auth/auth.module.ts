@@ -8,7 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LoggerModule } from 'src/common/logger/logger.module';
-import { JWT_EXPIRATION_TIME } from 'constants/constants';
+import { JWT_EXPIRATION_TIME } from 'src/common/constants/constants';
 
 @Module({
   imports: [

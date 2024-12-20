@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { CustomLoggerService } from './common/logger/custom-logger.service';
-import { APP_CONSTANTS } from 'constants/constants';
+import { APP_CONSTANTS } from 'src/common/constants/constants';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {

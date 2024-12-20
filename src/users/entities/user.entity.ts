@@ -4,9 +4,10 @@ import {
   Entity,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-
+import { Post } from 'src/posts/entities/post.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -68,4 +69,13 @@ export class User {
     example: '2024-12-16T15:00:00Z',
   })
   updatedAt: Date;
+
+  // **New: OneToMany Relationship with Post**
+  @OneToMany(() => Post, (post) => post.user)
+  @ApiProperty({
+    description: 'Posts created by the user',
+    type: () => [Post],
+    nullable: true,
+  })
+  posts: Post[];
 }

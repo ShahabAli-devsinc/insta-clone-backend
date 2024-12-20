@@ -10,7 +10,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
   @IsString()
-  @MinLength(5, { message: 'Username must be at least 3 characters long' })
+  @MinLength(5, { message: 'Username must be at least 5 characters long' })
   @MaxLength(20, { message: 'Username must be at most 20 characters long' })
   @ApiProperty({
     description: 'The username of the user. It must be unique.',
