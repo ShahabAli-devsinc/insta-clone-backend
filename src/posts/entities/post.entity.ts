@@ -6,9 +6,12 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from 'src/users/entities/user.entity';
+import { Like } from 'src/like/entities/like.entity';
+import { Comment } from 'src/comment/entities/comment.entity';
 
 @Entity()
 export class Post {
@@ -62,4 +65,18 @@ export class Post {
     example: '2024-12-16T15:00:00Z',
   })
   updatedAt: Date;
+
+  @OneToMany(() => Like, (like) => like.post)
+  @ApiProperty({
+    description: 'List of likes for the post',
+    type: () => [Like],
+  })
+  likes: Like[];
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  @ApiProperty({
+    description: 'List of comments for the post',
+    type: () => [Comment],
+  })
+  comments: Comment[];
 }
