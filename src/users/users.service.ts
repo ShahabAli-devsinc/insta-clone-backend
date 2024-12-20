@@ -6,7 +6,6 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
-
 @Injectable()
 export class UsersService {
   constructor(

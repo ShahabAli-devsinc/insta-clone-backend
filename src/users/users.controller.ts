@@ -33,8 +33,7 @@ export class UsersController {
     description: 'Unauthorized. Token is missing or invalid.',
   })
   async getProfile(@CurrentUser() user: User) {
-    const userrr = this.usersService.findById(user.id);
-    return userrr;
+    return this.usersService.findById(user.id);
   }
 
   @Patch('update')
