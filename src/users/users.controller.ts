@@ -32,8 +32,8 @@ export class UsersController {
     status: 401,
     description: 'Unauthorized. Token is missing or invalid.',
   })
-  async getProfile(@CurrentUser() user: JwtPayload) {
-    return this.usersService.findById(user.userId);
+  async getProfile(@CurrentUser() user: User) {
+    return this.usersService.findById(user.id);
   }
 
   @Patch('update')
@@ -47,10 +47,10 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Invalid data provided' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateProfile(
-    @Request() req: Express.Request & { user: JwtPayload },
+    @Request() req: Express.Request & { user: User },
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     return this.usersService.update(userId, updateUserDto);
   }
 }

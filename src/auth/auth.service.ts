@@ -6,16 +6,16 @@ import { LoginDto } from './dto/login.dto';
 import { Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { CustomLoggerService } from 'src/common/logger/custom-logger.service'; // Import the logger
+import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
 import { User } from 'src/users/entities/user.entity';
-import { ValidationError } from 'class-validator';
-
+import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { LoginUser } from 'src/common/types/types';
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private readonly logger: CustomLoggerService, // Inject logger service
+    private readonly logger: CustomLoggerService,
   ) {}
 
   async validateUser({ username, password }: LoginDto): Promise<User> {
@@ -42,15 +42,21 @@ export class AuthService {
     }
   }
 
-  async login(user: any, @Res() response: Response) {
+  async login(user: LoginUser, @Res() response: Response) {
     try {
-      const payload = { sub: user.id };
-      const accessToken = this.jwtService.sign(payload);
+      const payload: JwtPayload = {
+        userId: user.id,
+        username: user.username,
+      };
 
+      const accessToken = this.jwtService.sign(payload, {
+        expiresIn: '1d',
+      });
       // Set the cookie in the response
       response.cookie('access_token', accessToken, {
         httpOnly: true,
         secure: false,
+        maxAge: 24 * 60 * 60 * 1000,
       });
 
       const signedInUser = await this.usersService.findById(user.id);

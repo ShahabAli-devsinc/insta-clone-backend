@@ -5,7 +5,6 @@ import {
   UseGuards,
   Request,
   Res,
-  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from '../common/decorators/public.decorator';
@@ -14,6 +13,7 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { User } from 'src/users/entities/user.entity';
+import { LoginUser } from 'src/common/types/types';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -31,7 +31,8 @@ export class AuthController {
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   async login(@Request() req: Express.Request, @Res() res: Response) {
-    this.authService.login(req.user, res);
+    const userLoggingIn = req.user as LoginUser;
+    this.authService.login(userLoggingIn, res);
   }
 
   @Public()

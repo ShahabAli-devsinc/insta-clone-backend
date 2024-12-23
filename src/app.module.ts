@@ -7,20 +7,17 @@ import { AppService } from './app.service';
 import { User } from './users/entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CustomLoggerService } from './common/logger/custom-logger.service';
-import { DATABASE_DEFAULTS } from 'constants/constants';
-import * as Joi from 'joi';
+import { PostsModule } from './posts/posts.module';
+import { Post } from './posts/entities/post.entity';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AttachUserInterceptor } from './common/interceptors/attach-user.interceptor';
+import { environmentValidationSchema } from './common/config/environment.validation';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: Joi.object({
-        DATABASE_HOST: Joi.string().default(DATABASE_DEFAULTS.HOST),
-        DATABASE_PORT: Joi.number().default(DATABASE_DEFAULTS.PORT),
-        DATABASE_USERNAME: Joi.string().required(),
-        DATABASE_PASSWORD: Joi.string().required(),
-        DATABASE_NAME: Joi.string().required(),
-      }),
+      validationSchema: environmentValidationSchema,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -31,13 +28,14 @@ import * as Joi from 'joi';
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [User],
-        synchronize: false,
+        entities: [User, Post],
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),
     UsersModule,
     AuthModule,
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -45,6 +43,10 @@ import * as Joi from 'joi';
     {
       provide: 'Logger',
       useClass: CustomLoggerService,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AttachUserInterceptor,
     },
   ],
 })

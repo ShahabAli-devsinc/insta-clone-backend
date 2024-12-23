@@ -81,15 +81,10 @@ export class UsersService {
       if (userNameExists) {
         return { message: 'Username is already taken' };
       }
-
-      // Update fields
-      if (updateUser.username) existingUser.username = updateUser.username;
-      if (updateUser.bio) existingUser.bio = updateUser.bio;
-      if (updateUser.profilePicture)
-        existingUser.profilePicture = updateUser.profilePicture;
+      const newUpdatedUser = { ...existingUser, ...updateUser };
 
       // Save the updated user
-      await this.usersRepository.save(existingUser);
+      await this.usersRepository.save(newUpdatedUser);
       return existingUser;
     } catch (error) {
       this.logger.error('Error occurred while updating user profile', error);
