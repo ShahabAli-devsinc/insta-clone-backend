@@ -11,17 +11,18 @@ import { PostsModule } from './posts/posts.module';
 import { Post } from './posts/entities/post.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AttachUserInterceptor } from './common/interceptors/attach-user.interceptor';
-import { environmentValidationSchema } from './common/config/environment.validation';
+import { ENVIRONMENTVALIDATIONSCHEMA } from './common/config/environment.validation';
 import { LikeModule } from './like/like.module';
 import { CommentModule } from './comment/comment.module';
 import { Like } from './like/entities/like.entity';
 import { Comment } from './comment/entities/comment.entity';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: environmentValidationSchema,
+      validationSchema: ENVIRONMENTVALIDATIONSCHEMA,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -42,6 +43,7 @@ import { Comment } from './comment/entities/comment.entity';
     PostsModule,
     LikeModule,
     CommentModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [
