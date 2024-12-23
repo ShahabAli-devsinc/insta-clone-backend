@@ -12,6 +12,10 @@ import { Post } from './posts/entities/post.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AttachUserInterceptor } from './common/interceptors/attach-user.interceptor';
 import { environmentValidationSchema } from './common/config/environment.validation';
+import { LikeModule } from './like/like.module';
+import { CommentModule } from './comment/comment.module';
+import { Like } from './like/entities/like.entity';
+import { Comment } from './comment/entities/comment.entity';
 
 @Module({
   imports: [
@@ -28,7 +32,7 @@ import { environmentValidationSchema } from './common/config/environment.validat
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [User, Post],
+        entities: [User, Post, Like, Comment],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -36,6 +40,8 @@ import { environmentValidationSchema } from './common/config/environment.validat
     UsersModule,
     AuthModule,
     PostsModule,
+    LikeModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [
