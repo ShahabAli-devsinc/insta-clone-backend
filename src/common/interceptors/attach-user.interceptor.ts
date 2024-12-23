@@ -7,12 +7,13 @@ import {
 import { Observable, from } from 'rxjs';
 import { UsersService } from 'src/users/users.service';
 import { tap, switchMap } from 'rxjs/operators';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AttachUserInterceptor implements NestInterceptor {
   constructor(private readonly usersService: UsersService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<User> {
     const request = context.switchToHttp().getRequest();
 
     if (request.user?.userId) {
