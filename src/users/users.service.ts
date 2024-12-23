@@ -95,8 +95,6 @@ export class UsersService {
       }
 
       await this.usersRepository.update(userId, updateUser);
-      console.log({ updateUser });
-
       return { id: userId, ...updateUser };
     } catch (error) {
       this.logger.error('Error occurred while updating user profile', error);
