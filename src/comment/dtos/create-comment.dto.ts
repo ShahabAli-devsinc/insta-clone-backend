@@ -27,5 +27,5 @@ export class CreateCommentDto {
   @MaxLength(500, {
     message: 'Comment content should not exceed 500 characters.',
   })
-  comment: string;
+  content: string;
 }

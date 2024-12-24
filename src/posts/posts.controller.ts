@@ -9,6 +9,7 @@ import {
   Get,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dtos/create-post.dto';
@@ -26,7 +27,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { Post as PostEntity } from './entities/post.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadedFileType } from 'src/common/types/types';
+import { UploadedFile as UploadedFileEntity } from 'src/common/types/types';
 @ApiTags('posts')
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -49,7 +50,7 @@ export class PostsController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async createPost(
     @Body() createPostDto: CreatePostDto,
-    @UploadedFile() file: UploadedFileType | undefined,
+    @UploadedFile() file: UploadedFileEntity | undefined,
     @CurrentUser() user: User,
   ): Promise<PostEntity> {
     return this.postsService.createPost(createPostDto, user, file);
@@ -114,13 +115,26 @@ export class PostsController {
    * Currently returns all posts but can be extended to show posts from followed users.
    * @returns An array of posts for the feed.
    */
+  // @Get('feed')
+  // @ApiOkResponse({
+  //   description: 'The feed posts have been successfully retrieved.',
+  //   type: [PostEntity],
+  // })
+  // @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  // async fetchFeed(@CurrentUser() currentUser: User): Promise<PostEntity[]> {
+  //   return this.postsService.getFeedPosts(currentUser.id);
+  // }
   @Get('feed')
   @ApiOkResponse({
     description: 'The feed posts have been successfully retrieved.',
-    type: [PostEntity],
+    type: [Post],
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  async fetchFeed(): Promise<PostEntity[]> {
-    return this.postsService.getFeedPosts();
+  async fetchFeed(
+    @CurrentUser() currentUser: User,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.postsService.getFeedPosts(currentUser.id, page, limit);
   }
 }

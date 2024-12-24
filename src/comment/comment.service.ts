@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Comment } from './entities/comment.entity';
 import { CreateCommentDto } from './dtos/create-comment.dto';
 import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
+
 @Injectable()
 export class CommentService {
   constructor(
@@ -26,10 +27,10 @@ export class CommentService {
     createCommentDto: CreateCommentDto,
   ): Promise<{ message: string }> {
     try {
-      const { postId, userId, comment } = createCommentDto;
+      const { postId, userId, content } = createCommentDto;
 
       const createdComment = await this.commentRepository.findOne({
-        where: { postId, userId, comment },
+        where: { postId, userId, content },
       });
 
       if (!createdComment) {

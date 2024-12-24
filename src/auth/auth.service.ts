@@ -9,8 +9,8 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
 import { User } from 'src/users/entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { LoginUser } from 'src/common/types/types';
-import { LOGIN_TOKEN_EXPIRATION_TIME } from 'src/common/constants/constants';
+import { LoginCredentials } from 'src/common/types/types';
+import { JWT_TOKEN_EXPIRATION_TIME } from 'src/common/constants/constants';
 @Injectable()
 export class AuthService {
   constructor(
@@ -43,32 +43,37 @@ export class AuthService {
     }
   }
 
-  async login(user: LoginUser, @Res() response: Response) {
+  async login(
+    userLoginCredentials: LoginCredentials,
+    @Res() response: Response,
+  ) {
     try {
+      const validatedUser = await this.validateUser(userLoginCredentials);
+
       const payload: JwtPayload = {
-        userId: user.id,
-        username: user.username,
+        userId: validatedUser.id,
+        username: validatedUser.username,
       };
 
       const accessToken = this.jwtService.sign(payload, {
-        expiresIn: LOGIN_TOKEN_EXPIRATION_TIME,
+        expiresIn: JWT_TOKEN_EXPIRATION_TIME,
       });
       // Set the cookie in the response
       response.cookie('access_token', accessToken, {
         httpOnly: true,
         secure: false,
-        maxAge: LOGIN_TOKEN_EXPIRATION_TIME,
+        maxAge: JWT_TOKEN_EXPIRATION_TIME,
       });
 
-      const signedInUser = await this.usersService.findById(user.id);
+      const signedInUser = await this.usersService.findById(validatedUser.id);
 
       response.json({
         message: 'Logged in successfully',
         user: signedInUser,
       });
     } catch (error) {
-      this.logger.error(`Error during login for user: ${user.id}`, error.stack);
-      throw new Error(`Error during login for user: ${user.id}`);
+      this.logger.error(`Error during login`, error.stack);
+      throw new Error(`Error during login.`);
     }
   }
 

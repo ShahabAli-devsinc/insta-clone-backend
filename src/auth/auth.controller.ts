@@ -6,8 +6,7 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { User } from 'src/users/entities/user.entity';
-import { LoginUser } from 'src/common/types/types';
-import { LoginUserDecorator } from 'src/common/decorators/login-user.decorator';
+import { LoginCredentials } from 'src/common/types/types';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -15,7 +14,6 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
-  @UseGuards(LoginValidationGuard)
   @Post('login')
   @ApiOperation({ summary: 'Login User' })
   @ApiResponse({
@@ -24,8 +22,11 @@ export class AuthController {
     type: User,
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async login(@LoginUserDecorator() user: LoginUser, @Res() res: Response) {
-    this.authService.login(user, res);
+  async login(
+    @Body() userLoginCredentials: LoginCredentials,
+    @Res() res: Response,
+  ) {
+    return this.authService.login(userLoginCredentials, res);
   }
 
   @Public()
