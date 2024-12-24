@@ -56,7 +56,7 @@ export class Comment {
     description: 'Content of the comment',
     example: 'This is a great post!',
   })
-  content: string;
+  comment: string;
 
   @CreateDateColumn()
   @ApiProperty({

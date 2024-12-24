@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
 import { Repository } from 'typeorm';
@@ -6,12 +10,15 @@ import { CreatePostDto } from './dtos/create-post.dto';
 import { User } from 'src/users/entities/user.entity';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { UploadedFileType } from 'src/common/types/types';
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(Post)
     private postsRepository: Repository<Post>,
     private readonly logger: CustomLoggerService,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   /**
@@ -20,8 +27,16 @@ export class PostsService {
    * @param user The authenticated user creating the post.
    * @returns The created post.
    */
-  async createPost(createPostDto: CreatePostDto, user: User): Promise<Post> {
+  async createPost(
+    createPostDto: CreatePostDto,
+    user: User,
+    file: UploadedFileType,
+  ): Promise<Post> {
     try {
+      if (file) {
+        const uploadedImage = await this.uploadImageToCloudinary(file);
+        createPostDto.imageUrl = uploadedImage.secure_url;
+      }
       const post = this.postsRepository.create({
         ...createPostDto,
         user,
@@ -31,6 +46,12 @@ export class PostsService {
       this.logger.error('Error occurred while create post', error);
       throw new Error('Error occurred while create post');
     }
+  }
+
+  async uploadImageToCloudinary(file: UploadedFileType) {
+    return await this.cloudinaryService.uploadImage(file).catch(() => {
+      throw new BadRequestException('Invalid file type.');
+    });
   }
 
   /**
@@ -98,14 +119,36 @@ export class PostsService {
     try {
       return await this.postsRepository.find({
         where: { userId: user.id },
-        relations: ['user'],
+        relations: ['user', 'likes', 'likes.user', 'comments', 'comments.user'],
         order: {
-          createdAt: 'ASC',
+          createdAt: 'DESC',
         },
       });
     } catch (error) {
       this.logger.error('Error occurred while fetching user posts', error);
       throw new Error('Error occurred while fetching user posts');
+    }
+  }
+
+  /**
+   * Fetches posts for the feed.
+   * Currently returns all posts but can be extended to show posts from followed users.
+   * Posts are displayed in reverse chronological order.
+   * @returns An array of posts for the feed.
+   */
+  async getFeedPosts(): Promise<Post[]> {
+    try {
+      return await this.postsRepository.find({
+        relations: ['user', 'likes', 'likes.user', 'comments', 'comments.user'],
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+
+      // Future Logic: Use a "follower-following" system to fetch posts of followed users.
+    } catch (error) {
+      this.logger.error('Error occurred while fetching feed posts', error);
+      throw new Error('Error occurred while fetching feed posts');
     }
   }
 }

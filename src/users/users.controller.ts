@@ -1,5 +1,12 @@
-import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
-import { Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Body,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from './entities/user.entity';
@@ -11,7 +18,8 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtPayload } from 'src/auth/interfaces/jwt-payload.interface';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadedFileType } from 'src/common/types/types';
 @ApiTags('Users')
 @UseGuards(JwtGuard)
 @Controller('users')
@@ -37,6 +45,7 @@ export class UsersController {
   }
 
   @Patch('update')
+  @UseInterceptors(FileInterceptor('file'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update User Profile' })
   @ApiResponse({
@@ -47,10 +56,10 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Invalid data provided' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateProfile(
-    @Request() req: Express.Request & { user: User },
+    @CurrentUser() user: User,
+    @UploadedFile() file: UploadedFileType | undefined,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    const userId = req.user.id;
-    return this.usersService.update(userId, updateUserDto);
+    return this.usersService.update(user.id, updateUserDto, file);
   }
 }

@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Get,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dtos/create-post.dto';
@@ -23,6 +25,8 @@ import {
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { Post as PostEntity } from './entities/post.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadedFileType } from 'src/common/types/types';
 @ApiTags('posts')
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -37,6 +41,7 @@ export class PostsController {
    * @returns The created post.
    */
   @Post()
+  @UseInterceptors(FileInterceptor('file'))
   @ApiCreatedResponse({
     description: 'The post has been successfully created.',
     type: CreatePostDto,
@@ -44,9 +49,10 @@ export class PostsController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async createPost(
     @Body() createPostDto: CreatePostDto,
+    @UploadedFile() file: UploadedFileType | undefined,
     @CurrentUser() user: User,
   ): Promise<PostEntity> {
-    return this.postsService.createPost(createPostDto, user);
+    return this.postsService.createPost(createPostDto, user, file);
   }
 
   /**
@@ -101,5 +107,20 @@ export class PostsController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async fetchUserPosts(@CurrentUser() user: User): Promise<PostEntity[]> {
     return this.postsService.getAllUserPosts(user);
+  }
+
+  /**
+   * Endpoint to fetch all posts for the feed.
+   * Currently returns all posts but can be extended to show posts from followed users.
+   * @returns An array of posts for the feed.
+   */
+  @Get('feed')
+  @ApiOkResponse({
+    description: 'The feed posts have been successfully retrieved.',
+    type: [PostEntity],
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  async fetchFeed(): Promise<PostEntity[]> {
+    return this.postsService.getFeedPosts();
   }
 }

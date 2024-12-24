@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,12 +6,15 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { UploadedFileType } from 'src/common/types/types';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private readonly logger: CustomLoggerService,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   async create(dto: CreateUserDto): Promise<User> {
@@ -67,11 +70,15 @@ export class UsersService {
     }
   }
 
-  async update(userId: number, updateUser: UpdateUserDto) {
+  async update(
+    userId: number,
+    updateUser: UpdateUserDto,
+    file?: UploadedFileType,
+  ) {
     try {
       const existingUser = await this.findById(userId);
       if (!existingUser) {
-        return { message: 'User not found' };
+        throw new Error('User not found.');
       }
 
       let userNameExists: boolean;
@@ -79,16 +86,25 @@ export class UsersService {
         userNameExists = existingUser.username === updateUser.username;
       }
       if (userNameExists) {
-        return { message: 'Username is already taken' };
+        throw new Error('Username already exists.');
       }
-      const newUpdatedUser = { ...existingUser, ...updateUser };
 
-      // Save the updated user
-      await this.usersRepository.save(newUpdatedUser);
-      return existingUser;
+      if (file) {
+        const uploadedImage = await this.uploadImageToCloudinary(file);
+        updateUser.profilePicture = uploadedImage.secure_url;
+      }
+
+      await this.usersRepository.update(userId, updateUser);
+      return { id: userId, ...updateUser };
     } catch (error) {
       this.logger.error('Error occurred while updating user profile', error);
       throw new Error('Error occurred while updating user profile');
     }
+  }
+
+  async uploadImageToCloudinary(file: UploadedFileType) {
+    return await this.cloudinaryService.uploadImage(file).catch(() => {
+      throw new BadRequestException('Invalid file type.');
+    });
   }
 }

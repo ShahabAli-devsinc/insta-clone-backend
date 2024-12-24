@@ -10,6 +10,7 @@ import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
 import { User } from 'src/users/entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { LoginUser } from 'src/common/types/types';
+import { LOGIN_TOKEN_EXPIRATION_TIME } from 'src/common/constants/constants';
 @Injectable()
 export class AuthService {
   constructor(
@@ -50,13 +51,13 @@ export class AuthService {
       };
 
       const accessToken = this.jwtService.sign(payload, {
-        expiresIn: '1d',
+        expiresIn: LOGIN_TOKEN_EXPIRATION_TIME,
       });
       // Set the cookie in the response
       response.cookie('access_token', accessToken, {
         httpOnly: true,
         secure: false,
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: LOGIN_TOKEN_EXPIRATION_TIME,
       });
 
       const signedInUser = await this.usersService.findById(user.id);

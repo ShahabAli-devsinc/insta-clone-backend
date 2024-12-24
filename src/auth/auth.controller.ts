@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Request,
-  Res,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Res, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from '../common/decorators/public.decorator';
 import { LoginValidationGuard } from './guards/local-auth.guard';
@@ -14,6 +7,7 @@ import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { User } from 'src/users/entities/user.entity';
 import { LoginUser } from 'src/common/types/types';
+import { LoginUserDecorator } from 'src/common/decorators/login-user.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -30,9 +24,8 @@ export class AuthController {
     type: User,
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async login(@Request() req: Express.Request, @Res() res: Response) {
-    const userLoggingIn = req.user as LoginUser;
-    this.authService.login(userLoggingIn, res);
+  async login(@LoginUserDecorator() user: LoginUser, @Res() res: Response) {
+    this.authService.login(user, res);
   }
 
   @Public()
