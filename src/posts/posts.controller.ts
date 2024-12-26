@@ -101,15 +101,6 @@ export class PostsController {
    * @param user The authenticated user.
    * @returns An array of posts created by the user.
    */
-  // @Get('user-posts')
-  // @ApiOkResponse({
-  //   description: 'The posts have been successfully retrieved.',
-  //   type: [PostEntity],
-  // })
-  // @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  // async fetchUserPosts(@CurrentUser() user: User): Promise<PostEntity[]> {
-  //   return this.postsService.getAllUserPosts(user);
-  // }
   @Get('user-posts')
   @ApiOkResponse({
     description: 'The posts have been successfully retrieved.',
