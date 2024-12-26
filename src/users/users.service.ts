@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,6 +28,15 @@ export class UsersService {
     try {
       const { username, email, password } = dto;
 
+      // Check if username or email already exists
+      const existingUser = await this.usersRepository.findOne({
+        where: [{ username }, { email }],
+      });
+
+      if (existingUser) {
+        throw new ConflictException('Username or email already exists.');
+      }
+
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(password, salt);
       const user = this.usersRepository.create({
@@ -36,7 +51,13 @@ export class UsersService {
       return newUser;
     } catch (error) {
       this.logger.error('Error occured while creating user', error);
-      throw new Error('Error occurred while creating user');
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Unexpected error occurred while creating user.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

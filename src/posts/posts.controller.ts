@@ -28,6 +28,7 @@ import { UpdatePostDto } from './dtos/update-post.dto';
 import { Post as PostEntity } from './entities/post.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadedFile as UploadedFileEntity } from 'src/common/types/types';
+
 @ApiTags('posts')
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -100,14 +101,27 @@ export class PostsController {
    * @param user The authenticated user.
    * @returns An array of posts created by the user.
    */
+  // @Get('user-posts')
+  // @ApiOkResponse({
+  //   description: 'The posts have been successfully retrieved.',
+  //   type: [PostEntity],
+  // })
+  // @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  // async fetchUserPosts(@CurrentUser() user: User): Promise<PostEntity[]> {
+  //   return this.postsService.getAllUserPosts(user);
+  // }
   @Get('user-posts')
   @ApiOkResponse({
     description: 'The posts have been successfully retrieved.',
     type: [PostEntity],
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  async fetchUserPosts(@CurrentUser() user: User): Promise<PostEntity[]> {
-    return this.postsService.getAllUserPosts(user);
+  async fetchUserPosts(
+    @CurrentUser() user: User,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ): Promise<{ data: PostEntity[]; total: number }> {
+    return this.postsService.getAllUserPosts(user, offset, limit);
   }
 
   /**
@@ -115,15 +129,7 @@ export class PostsController {
    * Currently returns all posts but can be extended to show posts from followed users.
    * @returns An array of posts for the feed.
    */
-  // @Get('feed')
-  // @ApiOkResponse({
-  //   description: 'The feed posts have been successfully retrieved.',
-  //   type: [PostEntity],
-  // })
-  // @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  // async fetchFeed(@CurrentUser() currentUser: User): Promise<PostEntity[]> {
-  //   return this.postsService.getFeedPosts(currentUser.id);
-  // }
+
   @Get('feed')
   @ApiOkResponse({
     description: 'The feed posts have been successfully retrieved.',

@@ -1,6 +1,7 @@
 import { v2 } from 'cloudinary';
 import { CloudinaryConstants } from 'src/common/constants/constants';
 import { ConfigService } from '@nestjs/config';
+
 export const CloudinaryProvider = {
   provide: CloudinaryConstants.CLOUDINARY,
   useFactory: (configService: ConfigService) => {
@@ -12,3 +13,4 @@ export const CloudinaryProvider = {
   },
   inject: [ConfigService],
 };
+  
