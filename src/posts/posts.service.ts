@@ -5,13 +5,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { User } from 'src/users/entities/user.entity';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { UploadedFileType } from 'src/common/types/types';
+import { UploadedFile } from 'src/common/types/types';
+import { Follow } from 'src/follow/entities/follow.entity';
 @Injectable()
 export class PostsService {
   constructor(
@@ -19,6 +20,8 @@ export class PostsService {
     private postsRepository: Repository<Post>,
     private readonly logger: CustomLoggerService,
     private cloudinaryService: CloudinaryService,
+    @InjectRepository(Follow)
+    private readonly followRepository: Repository<Follow>,
   ) {}
 
   /**
@@ -30,7 +33,7 @@ export class PostsService {
   async createPost(
     createPostDto: CreatePostDto,
     user: User,
-    file: UploadedFileType,
+    file: UploadedFile,
   ): Promise<Post> {
     try {
       if (file) {
@@ -48,10 +51,12 @@ export class PostsService {
     }
   }
 
-  async uploadImageToCloudinary(file: UploadedFileType) {
-    return await this.cloudinaryService.uploadImage(file).catch(() => {
+  async uploadImageToCloudinary(file: UploadedFile) {
+    try {
+      return await this.cloudinaryService.uploadImage(file);
+    } catch (error) {
       throw new BadRequestException('Invalid file type.');
-    });
+    }
   }
 
   /**
@@ -136,18 +141,38 @@ export class PostsService {
    * Posts are displayed in reverse chronological order.
    * @returns An array of posts for the feed.
    */
-  async getFeedPosts(): Promise<Post[]> {
+  async getFeedPosts(
+    userId: number,
+    page: number,
+    limit: number,
+  ): Promise<{ posts: Post[]; total: number }> {
     try {
-      return await this.postsRepository.find({
+      const skip = (page - 1) * limit;
+
+      // Fetch followed user IDs
+      const follows = await this.followRepository.find({
+        where: { follower: { id: userId } },
+        relations: ['following'],
+      });
+
+      const followedUserIds = follows.map((follow) => follow.following.id);
+
+      // Include the current user's ID
+      const userAndFollowedIds = [...followedUserIds, userId];
+
+      // Fetch posts with pagination
+      const [posts, total] = await this.postsRepository.findAndCount({
+        where: { user: { id: In(userAndFollowedIds) } },
         relations: ['user', 'likes', 'likes.user', 'comments', 'comments.user'],
         order: {
           createdAt: 'DESC',
         },
+        skip,
+        take: limit,
       });
 
-      // Future Logic: Use a "follower-following" system to fetch posts of followed users.
+      return { posts, total };
     } catch (error) {
-      this.logger.error('Error occurred while fetching feed posts', error);
       throw new Error('Error occurred while fetching feed posts');
     }
   }

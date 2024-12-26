@@ -16,6 +16,8 @@ export const APP_CONSTANTS = {
   },
 };
 
-export const LOGIN_TOKEN_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
+export const JWT_TOKEN_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
-export const CLOUDINARY = 'Cloudinary';
+export enum CloudinaryConstants {
+  CLOUDINARY = 'Cloudinary',
+}

@@ -7,7 +7,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { LoggerModule } from 'src/common/logger/logger.module';
 import { JWT_EXPIRATION_TIME } from 'src/common/constants/constants';
 
 @Module({
@@ -22,7 +21,6 @@ import { JWT_EXPIRATION_TIME } from 'src/common/constants/constants';
       }),
     }),
     UsersModule,
-    LoggerModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],

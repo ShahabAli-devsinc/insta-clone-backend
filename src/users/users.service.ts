@@ -2,12 +2,13 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { UploadedFileType } from 'src/common/types/types';
+import { UploadedFile } from 'src/common/types/types';
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -70,11 +71,7 @@ export class UsersService {
     }
   }
 
-  async update(
-    userId: number,
-    updateUser: UpdateUserDto,
-    file?: UploadedFileType,
-  ) {
+  async update(userId: number, updateUser: UpdateUserDto, file?: UploadedFile) {
     try {
       const existingUser = await this.findById(userId);
       if (!existingUser) {
@@ -102,9 +99,23 @@ export class UsersService {
     }
   }
 
-  async uploadImageToCloudinary(file: UploadedFileType) {
-    return await this.cloudinaryService.uploadImage(file).catch(() => {
+  async uploadImageToCloudinary(file: UploadedFile) {
+    try {
+      return await this.cloudinaryService.uploadImage(file);
+    } catch (error) {
       throw new BadRequestException('Invalid file type.');
-    });
+    }
+  }
+
+  async findAll(currentUserId: number): Promise<User[]> {
+    try {
+      return await this.usersRepository.find({
+        where: { id: Not(currentUserId) },
+        relations: ['posts', 'followers', 'following'],
+      });
+    } catch (error) {
+      this.logger.error('Error occurred while fetching users', error);
+      throw new Error('Error occurred while fetching users');
+    }
   }
 }

@@ -19,7 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadedFileType } from 'src/common/types/types';
+import { UploadedFile as UploadedFileEntity } from 'src/common/types/types';
 @ApiTags('Users')
 @UseGuards(JwtGuard)
 @Controller('users')
@@ -57,9 +57,27 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateProfile(
     @CurrentUser() user: User,
-    @UploadedFile() file: UploadedFileType | undefined,
+    @UploadedFile() file: UploadedFileEntity | undefined,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(user.id, updateUserDto, file);
+  }
+
+  @Get('all')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Fetch all users except the currently authenticated user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all users except the current user',
+    type: [User],
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized. Token is missing or invalid.',
+  })
+  async getAllUsers(@CurrentUser() user: User) {
+    return this.usersService.findAll(user.id);
   }
 }

@@ -4,11 +4,16 @@ export type LoginUser = {
   email: string;
 };
 
-export type UploadedFileType = {
+export type UploadedFile = {
   fieldname: string;
   originalname: string;
   encoding: string;
   mimetype: string;
   buffer: Buffer;
   size: number;
+};
+
+export type LoginCredentials = {
+  username: string;
+  password: string;
 };

@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Post } from 'src/posts/entities/post.entity';
+import { Follow } from 'src/follow/entities/follow.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -78,4 +79,10 @@ export class User {
     nullable: true,
   })
   posts: Post[];
+
+  @OneToMany(() => Follow, (follow) => follow.following)
+  followers: Follow[];
+
+  @OneToMany(() => Follow, (follow) => follow.follower)
+  following: Follow[];
 }

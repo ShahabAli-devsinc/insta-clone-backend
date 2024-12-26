@@ -11,18 +11,22 @@ import { PostsModule } from './posts/posts.module';
 import { Post } from './posts/entities/post.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AttachUserInterceptor } from './common/interceptors/attach-user.interceptor';
-import { ENVIRONMENTVALIDATIONSCHEMA } from './common/config/environment.validation';
+import { ENVIRONMENT_VALIDATION_SCHEMA } from './common/config/environment.validation';
 import { LikeModule } from './like/like.module';
 import { CommentModule } from './comment/comment.module';
 import { Like } from './like/entities/like.entity';
 import { Comment } from './comment/entities/comment.entity';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ExploreModule } from './explore/explore.module';
+import { FollowModule } from './follow/follow.module';
+import { Follow } from './follow/entities/follow.entity';
+import { LoggerModule } from './common/logger/logger.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: ENVIRONMENTVALIDATIONSCHEMA,
+      validationSchema: ENVIRONMENT_VALIDATION_SCHEMA,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -33,7 +37,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [User, Post, Like, Comment],
+        entities: [User, Post, Like, Comment, Follow],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -44,6 +48,9 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     LikeModule,
     CommentModule,
     CloudinaryModule,
+    ExploreModule,
+    FollowModule,
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [
