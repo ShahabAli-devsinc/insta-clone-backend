@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
@@ -25,14 +31,14 @@ export class FollowService {
 
       // Prevent self-following
       if (followerId === followingId) {
-        return { message: 'You cannot follow yourself.' };
+        throw new BadRequestException('You cannot follow yourself.');
       }
 
       // Check if the follower and following users exist
-      const follower = await this.userRepository.findOneBy({ id: followerId });
-      const following = await this.userRepository.findOneBy({
-        id: followingId,
-      });
+      const [follower, following] = await Promise.all([
+        this.userRepository.findOneBy({ id: followerId }),
+        this.userRepository.findOneBy({ id: followingId }),
+      ]);
 
       if (!follower || !following) {
         throw new NotFoundException('User not found.');
@@ -44,7 +50,7 @@ export class FollowService {
       });
 
       if (existingFollow) {
-        return { message: 'You are already following this user.' };
+        throw new BadRequestException('You are already following this user.');
       }
 
       // Create a new follow relationship
@@ -55,7 +61,14 @@ export class FollowService {
       return newFollow;
     } catch (error) {
       this.logger.error('Error occurred in follow user', error);
-      throw new Error(error.message || 'Error occurred in follow user');
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Unexpected error occurred while following user.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -72,7 +85,14 @@ export class FollowService {
       await this.followRepository.remove(follow);
     } catch (error) {
       this.logger.error('Error occurred in unfollow user', error);
-      throw new Error('Error occurred in unfollow user');
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Unexpected error occurred while unfollowing user.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -83,10 +103,21 @@ export class FollowService {
         relations: ['follower'],
       });
 
+      if (!followers.length) {
+        throw new NotFoundException('No followers found.');
+      }
+
       return followers.map((f) => f.follower);
     } catch (error) {
       this.logger.error('Error occurred in get followers', error);
-      throw new Error('Error occurred in get followers');
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Unexpected error occurred while fetching followers.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -97,10 +128,21 @@ export class FollowService {
         relations: ['following'],
       });
 
+      if (!following.length) {
+        throw new NotFoundException('No following users found.');
+      }
+
       return following.map((f) => f.following);
     } catch (error) {
       this.logger.error('Error occurred in get following', error);
-      throw new Error('Error occurred in get following');
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Unexpected error occurred while fetching following users.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

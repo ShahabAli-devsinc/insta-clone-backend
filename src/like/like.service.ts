@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Like } from './entities/like.entity';
@@ -23,13 +29,21 @@ export class LikeService {
       });
 
       if (existingLike) {
-        throw new Error('User has already liked this post.');
+        throw new BadRequestException('User has already liked this post.');
       }
       const like = this.likeRepository.create(createLikeDto);
       return this.likeRepository.save(like);
     } catch (error) {
       this.logger.error('Error occurred while creating like.', error);
-      throw new Error('Error occurred while creating like.');
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Unexpected error occurred while creating a like.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -48,7 +62,14 @@ export class LikeService {
       return { message: 'Like removed successfully.' };
     } catch (error) {
       this.logger.error('Error occurred while deleting like', error);
-      throw new Error('Error occurred while deleting like');
-    }
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Unexpected error occurred while deleting a like.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );    }
   }
 }

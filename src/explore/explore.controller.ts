@@ -16,20 +16,6 @@ import { User } from 'src/users/entities/user.entity';
 export class ExploreController {
   constructor(private readonly exploreService: ExploreService) {}
 
-  // /**
-  //  * Endpoint to fetch all posts for the Explore page.
-  //  * Returns all posts irrespective of the user.
-  //  * @returns An array of posts for the Explore page.
-  //  */
-  // @Get('posts')
-  // @ApiOkResponse({
-  //   description: 'All posts have been successfully retrieved.',
-  //   type: [PostEntity],
-  // })
-  // @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  // async fetchAllPosts(@CurrentUser() user: User): Promise<PostEntity[]> {
-  //   return this.exploreService.getAllPosts(user.id);
-  // }
   /**
    * Endpoint to fetch posts for the Explore page with pagination and search.
    * @returns A paginated and filtered list of posts.
@@ -40,18 +26,13 @@ export class ExploreController {
     type: [PostEntity],
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  async fetchAllPosts(
+  async getAllPosts(
     @CurrentUser() user: User,
     @Query('query') query?: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ): Promise<{ posts: PostEntity[]; total: number }> {
-    return this.exploreService.getPaginatedAndFilteredPosts(
-      user.id,
-      query,
-      page,
-      limit,
-    );
+    return this.exploreService.getPosts(user.id, query, page, limit);
   }
 
   /**
@@ -65,17 +46,12 @@ export class ExploreController {
     type: [User],
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  async fetchAllUsers(
+  async getAllUsers(
     @CurrentUser() user: User,
     @Query('query') query?: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ): Promise<{ users: User[]; total: number }> {
-    return this.exploreService.getPaginatedAndFilteredUsers(
-      user.id,
-      query,
-      page,
-      limit,
-    );
+    return this.exploreService.getUsers(user.id, query, page, limit);
   }
 }

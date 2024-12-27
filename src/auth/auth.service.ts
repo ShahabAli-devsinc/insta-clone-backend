@@ -1,9 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Res } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
-import { Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
@@ -11,6 +10,7 @@ import { User } from 'src/users/entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { LoginCredentials } from 'src/common/types/types';
 import { JWT_TOKEN_EXPIRATION_TIME } from 'src/common/constants/constants';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -25,21 +25,27 @@ export class AuthService {
 
       if (!user) {
         this.logger.warn(`User not found: ${username}`);
-        throw new Error('User not found.');
+        throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
         this.logger.warn(`Password mismatch for user: ${username}`);
-        throw new Error(`Password mismatch for user: ${username}`);
+        throw new HttpException(
+          'Invalid credentials.',
+          HttpStatus.UNAUTHORIZED,
+        );
       }
 
       delete user.password;
       return user;
     } catch (error) {
       this.logger.error(`Error validating user: ${username}`, error.stack);
-      throw new Error(`Error validating user: ${username}`);
+      throw new HttpException(
+        `Internal server error while validating user.`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -58,7 +64,7 @@ export class AuthService {
       const accessToken = this.jwtService.sign(payload, {
         expiresIn: JWT_TOKEN_EXPIRATION_TIME,
       });
-      // Set the cookie in the response
+
       response.cookie('access_token', accessToken, {
         httpOnly: true,
         secure: false,
@@ -73,7 +79,10 @@ export class AuthService {
       });
     } catch (error) {
       this.logger.error(`Error during login`, error.stack);
-      throw new Error(`Error during login.`);
+      throw new HttpException(
+        'Login failed. Please check your credentials.',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
   }
 
@@ -85,7 +94,13 @@ export class AuthService {
         `Error during registration for user: ${body.username}`,
         error,
       );
-      throw new Error(`Error during registration for user: ${body.username}`);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        `Error during registration. Username might already exist.`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -98,7 +113,10 @@ export class AuthService {
       res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
       this.logger.error(`Error during logging out user`, error);
-      throw new Error(`Error during logging out user`);
+      throw new HttpException(
+        `Error during logout.`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

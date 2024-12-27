@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Not, Repository } from 'typeorm';
 import { Post } from '../posts/entities/post.entity';
@@ -23,7 +23,7 @@ export class ExploreService {
    * @param limit Number of posts per page.
    * @returns A paginated and filtered list of posts.
    */
-  async getPaginatedAndFilteredPosts(
+  async getPosts(
     currentUserId: number,
     query: string,
     page: number,
@@ -60,8 +60,13 @@ export class ExploreService {
         'Error occurred while fetching paginated and filtered posts',
         error,
       );
-      throw new Error(
-        'Error occurred while fetching paginated and filtered posts',
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Unexpected error while fetching posts.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -74,7 +79,7 @@ export class ExploreService {
    * @param limit Number of users per page.
    * @returns A paginated and filtered list of users.
    */
-  async getPaginatedAndFilteredUsers(
+  async getUsers(
     currentUserId: number,
     query: string,
     page: number,
@@ -95,26 +100,30 @@ export class ExploreService {
         .where('user.id != :currentUserId', { currentUserId });
 
       if (query) {
-        queryBuilder.andWhere(
-          '(user.username ILIKE :query OR user.bio ILIKE :query)',
-          { query: `%${query}%` },
-        );
+        queryBuilder.andWhere('(user.username ILIKE :query)', {
+          query: `%${query}%`,
+        });
       }
 
       const [users, total] = await queryBuilder
         .orderBy('user.createdAt', 'DESC') // Sort by latest users
         .skip(skip)
         .take(limit)
-        .getManyAndCount();
+        .getManyAndCount(); 
 
       return { users, total };
     } catch (error) {
       this.logger.error(
         'Error occurred while fetching paginated and filtered users',
-        error,
+        error.stack,
       );
-      throw new Error(
-        'Error occurred while fetching paginated and filtered users',
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Unexpected error while fetching users.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

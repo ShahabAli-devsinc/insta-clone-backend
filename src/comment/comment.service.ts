@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Comment } from './entities/comment.entity';
@@ -19,7 +24,10 @@ export class CommentService {
       return this.commentRepository.save(comment);
     } catch (error) {
       this.logger.error('Error occurred while creating comment.', error);
-      throw new Error('Error occurred while creating comment.');
+      throw new HttpException(
+        'Error occurred while creating comment. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -41,7 +49,10 @@ export class CommentService {
       return { message: 'Comment deleted successfully.' };
     } catch (error) {
       this.logger.error('Error occurred while deleting comment', error);
-      throw new Error('Error occurred while deleting comment.');
+      throw new HttpException(
+        'Error occurred while deleting comment. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

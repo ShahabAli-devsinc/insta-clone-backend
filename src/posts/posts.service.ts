@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,6 +15,7 @@ import { CustomLoggerService } from 'src/common/logger/custom-logger.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UploadedFile } from 'src/common/types/types';
 import { Follow } from 'src/follow/entities/follow.entity';
+
 @Injectable()
 export class PostsService {
   constructor(
@@ -47,7 +50,10 @@ export class PostsService {
       return this.postsRepository.save(post);
     } catch (error) {
       this.logger.error('Error occurred while create post', error);
-      throw new Error('Error occurred while create post');
+      throw new HttpException(
+        'Error occurred while creating a post.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -55,6 +61,7 @@ export class PostsService {
     try {
       return await this.cloudinaryService.uploadImage(file);
     } catch (error) {
+      this.logger.error('Invalid file type for upload', error.stack);
       throw new BadRequestException('Invalid file type.');
     }
   }
@@ -86,7 +93,10 @@ export class PostsService {
       return this.postsRepository.save(post);
     } catch (error) {
       this.logger.error('Error occurred while update post', error);
-      throw new Error('Error occurred while update post');
+      throw new HttpException(
+        'Error occurred while updating a post.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -111,7 +121,10 @@ export class PostsService {
       return { message: 'Post deleted successfully' };
     } catch (error) {
       this.logger.error('Error occurred while deleting post', error);
-      throw new Error('Error occurred while deleting post');
+      throw new HttpException(
+        'Error occurred while deleting a post.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -120,15 +133,22 @@ export class PostsService {
    * @param user The authenticated user.
    * @returns An array of posts created by the user.
    */
-  async getAllUserPosts(user: User): Promise<Post[]> {
+  async getAllUserPosts(
+    user: User,
+    offset: number,
+    limit: number,
+  ): Promise<{ data: Post[]; total: number }> {
     try {
-      return await this.postsRepository.find({
+      const [data, total] = await this.postsRepository.findAndCount({
         where: { userId: user.id },
         relations: ['user', 'likes', 'likes.user', 'comments', 'comments.user'],
         order: {
           createdAt: 'DESC',
         },
+        skip: offset,
+        take: limit,
       });
+      return { data, total };
     } catch (error) {
       this.logger.error('Error occurred while fetching user posts', error);
       throw new Error('Error occurred while fetching user posts');
