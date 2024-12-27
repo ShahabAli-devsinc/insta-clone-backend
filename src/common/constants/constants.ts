@@ -6,7 +6,7 @@ export const DATABASE_DEFAULTS = {
 };
 
 export const APP_CONSTANTS = {
-  DEFAULT_PORT: 3001,
+  DEFAULT_PORT: 5000,
   CORS_ORIGIN: 'http://localhost:3000',
   SWAGGER: {
     TITLE: 'Instagram Clone API',
