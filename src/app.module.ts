@@ -1,25 +1,25 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { User } from './users/entities/user.entity';
+import { User } from './modules/users/entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CustomLoggerService } from './common/logger/custom-logger.service';
-import { PostsModule } from './posts/posts.module';
-import { Post } from './posts/entities/post.entity';
+import { PostsModule } from './modules/posts/posts.module';
+import { Post } from './modules/posts/entities/post.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AttachUserInterceptor } from './common/interceptors/attach-user.interceptor';
 import { ENVIRONMENT_VALIDATION_SCHEMA } from './common/config/environment.validation';
-import { LikeModule } from './like/like.module';
-import { CommentModule } from './comment/comment.module';
-import { Like } from './like/entities/like.entity';
-import { Comment } from './comment/entities/comment.entity';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { ExploreModule } from './explore/explore.module';
-import { FollowModule } from './follow/follow.module';
-import { Follow } from './follow/entities/follow.entity';
+import { LikeModule } from './modules/like/like.module';
+import { CommentModule } from './modules/comment/comment.module';
+import { Like } from './modules/like/entities/like.entity';
+import { Comment } from './modules/comment/entities/comment.entity';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { ExploreModule } from './modules/explore/explore.module';
+import { FollowModule } from './modules/follow/follow.module';
+import { Follow } from './modules/follow/entities/follow.entity';
 import { LoggerModule } from './common/logger/logger.module';
 
 @Module({

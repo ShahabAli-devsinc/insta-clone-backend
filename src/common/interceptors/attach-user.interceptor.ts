@@ -5,9 +5,9 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable, from } from 'rxjs';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from 'src/modules/users/users.service';
 import { tap, switchMap } from 'rxjs/operators';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 
 @Injectable()
 export class AttachUserInterceptor implements NestInterceptor {
